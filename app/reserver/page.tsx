@@ -127,7 +127,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", justifyContent: "flex-end", padding: 16 }}>
-        <img src="/logo.png" alt="Logo paroisse" style={{ height: 64 }} />
+        <img src="/logo.png" alt="Logo paroisse" style={{ height: 110 }} />
       </div>
       <div style={{ flex: 1 }}>{children}</div>
       <footer style={pied}>Alexandre FAMARE © 2026</footer>
