@@ -12,6 +12,8 @@ export default function Gerer() {
   const [token, setToken] = useState<string>("");
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>(null);
+  const [annulId, setAnnulId] = useState<string | null>(null);
+  const [motifAnnul, setMotifAnnul] = useState("");
   const [msg, setMsg] = useState("");
   const [chargement, setChargement] = useState(true);
 
@@ -50,15 +52,18 @@ export default function Gerer() {
   }
 
   async function annuler(id: string) {
-    if (!confirm("Confirmer l'annulation de cette réservation ?")) return;
     setMsg("");
+    if (!motifAnnul.trim()) { setMsg("Le motif d'annulation est obligatoire."); return; }
     const res = await fetch("/api/annuler", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reservation_id: id, access_token: token }),
+      body: JSON.stringify({ reservation_id: id, access_token: token, motif_annulation: motifAnnul }),
     });
     const j = await res.json();
-    if (j.ok) charger();
-    else setMsg(j.error);
+    if (j.ok) {
+      setAnnulId(null); setMotifAnnul("");
+      if (!j.mailEnvoye) setMsg("Réservation annulée. (Aucun email n'a été envoyé : le responsable n'avait pas fourni d'adresse email.)");
+      charger();
+    } else setMsg(j.error);
   }
 
   function ouvrirEdition(r: any) {
@@ -101,7 +106,7 @@ export default function Gerer() {
           <button style={lien} onClick={() => getSupabase().auth.signOut().then(() => window.location.href = "/")}>Déconnexion</button>
         </div>
 
-        {msg && <div style={{ background: "#fee2e2", color: "#b91c1c", padding: 10, borderRadius: 6, margin: "8px 0" }}>{msg}</div>}
+        {msg && <div style={{ background: "#fef3c7", color: "#92400e", padding: 10, borderRadius: 6, margin: "8px 0" }}>{msg}</div>}
 
         <p style={{ color: "#666", fontSize: 14 }}>Réservations à venir (de la date du jour aux suivantes).</p>
         {resas.length === 0 && <p style={{ color: "#777" }}>Aucune réservation à venir.</p>}
@@ -141,17 +146,35 @@ export default function Gerer() {
                 <button style={{ ...lien, marginLeft: 10 }} onClick={() => { setEditId(null); setMsg(""); }}>Annuler l'édition</button>
               </div>
             ) : (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                <div>
-                  <b>{frDate(r.date_resa)} · {r.heure_debut.slice(0, 5)}–{r.heure_fin.slice(0, 5)}</b><br />
-                  <span style={{ color: "#555", fontSize: 14 }}>{r.salles_salles?.lieu} — {r.salles_salles?.nom}</span><br />
-                  <span style={{ fontSize: 14 }}>Groupe : {r.groupe} · {r.objet}</span><br />
-                  <span style={{ fontSize: 13, color: "#666" }}>Responsable : {r.responsable_nom} ({r.responsable_tel}){r.responsable_email ? ` · ${r.responsable_email}` : ""}</span>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                  <div>
+                    <b>{frDate(r.date_resa)} · {r.heure_debut.slice(0, 5)}–{r.heure_fin.slice(0, 5)}</b><br />
+                    <span style={{ color: "#555", fontSize: 14 }}>{r.salles_salles?.lieu} — {r.salles_salles?.nom}</span><br />
+                    <span style={{ fontSize: 14 }}>Groupe : {r.groupe} · {r.objet}</span><br />
+                    <span style={{ fontSize: 13, color: "#666" }}>Responsable : {r.responsable_nom} ({r.responsable_tel}){r.responsable_email ? ` · ${r.responsable_email}` : " · (pas d'email)"}</span>
+                  </div>
+                  {annulId !== r.id && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <button style={btnMini} onClick={() => ouvrirEdition(r)}>Modifier</button>
+                      <button style={{ ...btnMini, background: "#b91c1c" }} onClick={() => { setAnnulId(r.id); setMotifAnnul(""); setMsg(""); }}>Annuler</button>
+                    </div>
+                  )}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <button style={btnMini} onClick={() => ouvrirEdition(r)}>Modifier</button>
-                  <button style={{ ...btnMini, background: "#b91c1c" }} onClick={() => annuler(r.id)}>Annuler</button>
-                </div>
+                {annulId === r.id && (
+                  <div style={{ background: "#fff7ed", padding: 12, borderRadius: 8, marginTop: 10 }}>
+                    <label style={lbl}>Motif de l'annulation (obligatoire)</label>
+                    <textarea style={{ ...inp, minHeight: 60 }} value={motifAnnul}
+                      onChange={(e) => setMotifAnnul(e.target.value)} />
+                    {!r.responsable_email && (
+                      <p style={{ color: "#b45309", fontSize: 12, margin: "4px 0" }}>
+                        ⚠️ Le responsable n'a pas fourni d'email : aucun message d'annulation ne pourra lui être envoyé.
+                      </p>
+                    )}
+                    <button style={{ ...btn, background: "#b91c1c" }} onClick={() => annuler(r.id)}>Confirmer l'annulation</button>
+                    <button style={{ ...lien, marginLeft: 10 }} onClick={() => { setAnnulId(null); setMotifAnnul(""); setMsg(""); }}>Retour</button>
+                  </div>
+                )}
               </div>
             )}
           </div>
