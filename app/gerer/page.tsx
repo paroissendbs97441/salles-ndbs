@@ -97,7 +97,7 @@ export default function Gerer() {
       <div style={{ maxWidth: 800, margin: "0 auto", padding: 16, width: "100%", boxSizing: "border-box", flex: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <h1 style={{ fontSize: 21 }}>Gérer les réservations</h1>
-          <img src="/logo.png" alt="Logo paroisse" style={{ height: 60 }} />
+          <img src="/logo.png" alt="Logo paroisse" style={{ height: 110 }} />
         </div>
 
         <div style={{ textAlign: "right", margin: "8px 0" }}>
