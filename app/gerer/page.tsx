@@ -84,8 +84,11 @@ export default function Gerer() {
       body: JSON.stringify({ reservation_id: editId, access_token: token, ...editForm }),
     });
     const j = await res.json();
-    if (j.ok) { setEditId(null); setEditForm(null); charger(); }
-    else setMsg(j.error);
+    if (j.ok) {
+      setEditId(null); setEditForm(null);
+      if (!j.mailEnvoye) setMsg("Réservation modifiée. (Aucun email n'a été envoyé : le responsable n'a pas d'adresse email.)");
+      charger();
+    } else setMsg(j.error);
   }
 
   const lieux = Array.from(new Set(salles.map((s) => s.lieu)));
@@ -142,6 +145,11 @@ export default function Gerer() {
                 <input style={inp} value={editForm.responsable_tel} onChange={(e) => setEditForm({ ...editForm, responsable_tel: e.target.value })} />
                 <label style={lbl}>Email</label>
                 <input style={inp} value={editForm.responsable_email} onChange={(e) => setEditForm({ ...editForm, responsable_email: e.target.value })} />
+                {!editForm.responsable_email?.trim() && (
+                  <p style={{ color: "#b45309", fontSize: 12, margin: "0 0 6px" }}>
+                    ⚠️ Sans email, le responsable ne sera pas informé de la modification.
+                  </p>
+                )}
                 <button style={btn} onClick={enregistrerEdition}>Enregistrer</button>
                 <button style={{ ...lien, marginLeft: 10 }} onClick={() => { setEditId(null); setMsg(""); }}>Annuler l'édition</button>
               </div>
