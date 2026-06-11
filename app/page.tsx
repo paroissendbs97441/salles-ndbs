@@ -56,7 +56,7 @@ export default function Accueil() {
               <span style={{ fontSize: 15, color: "#555" }}>Paroisse Notre Dame du Bon Secours</span>
             </h1>
           </div>
-          <img src="/logo.png" alt="Logo paroisse" style={{ height: 64 }} />
+          <img src="/logo.png" alt="Logo paroisse" style={{ height: 110 }} />
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", margin: "16px 0" }}>
